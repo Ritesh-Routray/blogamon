@@ -1,15 +1,12 @@
-// app/api/blogs/route.js
 import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/app/lib/mongoose.js";
 import Blog from "@/app/models/Blog";
 
+// GET: Fetch all blogs sorted by creation date
 export async function GET() {
   try {
     await connectToDatabase();
-
-    // Fetch all blogs sorted by creation date
     const blogs = await Blog.find({}).sort({ createdAt: -1 }).select("-__v");
-
     return NextResponse.json(blogs);
   } catch (error) {
     return NextResponse.json(
@@ -19,18 +16,27 @@ export async function GET() {
   }
 }
 
-// Handle POST request to create a new blog
+// POST: Create a new blog
 export async function POST(request) {
   try {
-    await connectToDatabase(); // Ensure the database connection is established
-
-    const body = await request.json(); // Parse incoming request body
+    await connectToDatabase(); // Ensure DB connection
+    const body = await request.json(); // Parse incoming JSON body
 
     // Validate required fields
-    const { title, content, author, image, tags } = body;
+    const {
+      title,
+      content,
+      author,
+      image,
+      tags = [],
+      isPublished = false,
+    } = body;
     if (!title || !content || !author || !image) {
       return NextResponse.json(
-        { message: 'Missing required fields: title, content, author, and image are required.' },
+        {
+          message:
+            "Missing required fields: title, content, author, and image are required.",
+        },
         { status: 400 }
       );
     }
@@ -41,24 +47,91 @@ export async function POST(request) {
       content,
       author,
       image,
-      tags: tags || [],
-      isPublished: true, // Set to true by default
+      tags: Array.isArray(tags)
+        ? tags
+        : tags.split(",").map((tag) => tag.trim()),
+      isPublished,
     });
 
     // Save the blog to the database
     const savedBlog = await newBlog.save();
 
-    // Return the saved blog as a response
     return NextResponse.json(savedBlog, { status: 201 });
   } catch (error) {
     return NextResponse.json(
-      { message: 'Error creating blog', error: error.message },
+      { message: "Error creating blog", error: error.message },
       { status: 500 }
     );
   }
 }
 
+// PUT: Update an existing blog (optional)
+export async function PUT(request) {
+  try {
+    await connectToDatabase();
+    const { id, title, content, author, image, tags, isPublished } =
+      await request.json();
 
+    if (!id) {
+      return NextResponse.json(
+        { message: "Blog ID is required" },
+        { status: 400 }
+      );
+    }
 
+    const updatedBlog = await Blog.findByIdAndUpdate(
+      id,
+      {
+        title,
+        content,
+        author,
+        image,
+        tags: Array.isArray(tags)
+          ? tags
+          : tags.split(",").map((tag) => tag.trim()),
+        isPublished,
+        updatedAt: new Date(),
+      },
+      { new: true }
+    );
 
+    if (!updatedBlog) {
+      return NextResponse.json({ message: "Blog not found" }, { status: 404 });
+    }
 
+    return NextResponse.json(updatedBlog);
+  } catch (error) {
+    return NextResponse.json(
+      { message: "Error updating blog", error: error.message },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE: Delete an existing blog (optional)
+export async function DELETE(request) {
+  try {
+    await connectToDatabase();
+    const { id } = await request.json();
+
+    if (!id) {
+      return NextResponse.json(
+        { message: "Blog ID is required" },
+        { status: 400 }
+      );
+    }
+
+    const deletedBlog = await Blog.findByIdAndDelete(id);
+
+    if (!deletedBlog) {
+      return NextResponse.json({ message: "Blog not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ message: "Blog deleted successfully" });
+  } catch (error) {
+    return NextResponse.json(
+      { message: "Error deleting blog", error: error.message },
+      { status: 500 }
+    );
+  }
+}
