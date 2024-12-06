@@ -69,3 +69,25 @@ export async function PUT(req, { params }) {
     );
   }
 }
+
+export async function GET(request, { params }) {
+  const { id } = params;
+
+  try {
+    await connectToDatabase();
+
+    const blog = await Blog.findById(id);
+    if (!blog) {
+      return NextResponse.json({ message: "Blog not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(blog);
+  } catch (error) {
+    console.error("Error fetching blog:", error);
+    return NextResponse.json(
+      { message: "Internal Server Error" },
+      { status: 500 }
+    );
+  }
+
+}

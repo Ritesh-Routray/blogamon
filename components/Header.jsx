@@ -1,7 +1,8 @@
-"use client";
-import Link from "next/link";
+'use client'
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { FaSignInAlt, FaEdit, FaRegUser } from "react-icons/fa";
 
 const Header = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -42,40 +43,35 @@ const Header = () => {
           </h1>
 
           {/* Navigation Buttons */}
-          <nav className="flex flex-wrap gap-4 sm:gap-6 items-center mt-4 sm:mt-0">
+          <nav className="flex items-center space-x-4">
+            {/* If logged in, show the menu */}
             {isLoggedIn ? (
               <>
-                <button
-                  onClick={handleLogout}
-                  className="bg-red-600 text-white px-6 py-2 rounded-lg shadow-xl hover:bg-red-500 hover:scale-105 transition-transform duration-300 ease-in-out transform w-full sm:w-auto"
-                >
-                  Sign Out
-                </button>
                 <Link
                   href="/create"
-                  className="bg-blue-600 text-white px-6 py-2 rounded-lg shadow-xl hover:bg-blue-500 hover:scale-105 transition-transform duration-300 ease-in-out transform w-full sm:w-auto"
+                  className="text-blue-600 font-semibold px-4 py-2 rounded-lg shadow-xl hover:scale-105 transition-transform duration-300"
                 >
-                  Create
+                  <FaEdit className="inline mr-2" /> Create
                 </Link>
                 <Link
                   href="/my-blogs"
-                  className="bg-green-600 text-white px-6 py-2 rounded-lg shadow-xl hover:bg-green-500 hover:scale-105 transition-transform duration-300 ease-in-out transform w-full sm:w-auto"
+                  className="text-green-600 font-semibold px-4 py-2 rounded-lg shadow-xl hover:scale-105 transition-transform duration-300"
                 >
-                  My Blogs
+                  <FaRegUser className="inline mr-2" /> My Blogs
                 </Link>
-                <Link
-                  href="/profile"
-                  className="bg-yellow-500 text-white px-6 py-2 rounded-lg shadow-xl hover:bg-yellow-400 hover:scale-105 transition-transform duration-300 ease-in-out transform w-full sm:w-auto"
+                <button
+                  onClick={handleLogout}
+                  className="text-red-600 font-semibold px-4 py-2 rounded-lg shadow-xl hover:scale-105 transition-transform duration-300"
                 >
-                  Profile
-                </Link>
+                  <FaSignInAlt className="inline mr-2" /> Sign Out
+                </button>
               </>
             ) : (
               <Link
                 href="/signup"
-                className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-8 py-3 rounded-lg shadow-xl hover:scale-105 hover:shadow-2xl transition-all duration-300 ease-in-out transform w-full sm:w-auto"
+                className="text-white font-semibold px-6 py-2 rounded-lg shadow-xl bg-gradient-to-r from-pink-500 to-orange-500 hover:scale-105 transition-transform duration-300"
               >
-                Get Started
+                <FaSignInAlt className="inline mr-2" /> Get Started
               </Link>
             )}
           </nav>

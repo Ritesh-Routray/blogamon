@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation"; // Import useRouter
 
 export default function BlogItems() {
   const [blogs, setBlogs] = useState([]);
-  const [expandedBlog, setExpandedBlog] = useState(null); // To track the expanded blog
+  const router = useRouter(); // Initialize router for navigation
 
   useEffect(() => {
     const fetchBlogs = async () => {
@@ -23,71 +24,48 @@ export default function BlogItems() {
     fetchBlogs();
   }, []);
 
-  // Function to handle "Read More" click
-  const toggleExpandBlog = (id) => {
-    if (expandedBlog === id) {
-      setExpandedBlog(null); // Collapse if already expanded
-    } else {
-      setExpandedBlog(id); // Expand selected blog
-    }
+  // Handle navigation to individual blog
+  const handleBlogClick = (id) => {
+    router.push(`/blogs/${id}`); // Redirect to dynamic blog page
   };
 
   return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-4xl font-extrabold text-center mb-8 text-gradient bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
-        Blogamon - All Blogs
+    <div className="container mx-auto p-6 font-sans">
+      <h1 className="text-5xl font-extrabold text-center mb-10 text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-blue-500 to-purple-600 drop-shadow-lg">
+        Blogamon - Discover Amazing Blogs
       </h1>
+
       {blogs.length === 0 ? (
-        <p className="text-xl text-gray-500 text-center">No blogs available.</p>
+        <p className="text-2xl text-gray-500 text-center font-light">
+          No blogs available. Stay tuned!
+        </p>
       ) : (
-        blogs.map((blog) => (
-          <div
-            key={blog._id}
-            className="bg-white shadow-lg rounded-lg overflow-hidden transform transition-all hover:scale-105 hover:shadow-xl duration-300 mb-8"
-          >
-            <img
-              src={blog.image}
-              alt={blog.title}
-              className="w-full h-72 object-cover rounded-t-lg"
-            />
-            <div className="p-6">
-              <h2 className="text-3xl font-bold text-gray-800 mb-4">
-                {blog.title}
-              </h2>
-              <p className="text-lg text-gray-600 italic mb-4">
-                By {blog.author}
-              </p>
-              <div className="mt-2">
-                <p className="text-gray-700">
-                  {expandedBlog === blog._id
-                    ? blog.content
-                    : `${blog.content.substring(0, 150)}...`}{" "}
-                  <button
-                    onClick={() => toggleExpandBlog(blog._id)}
-                    className="text-blue-600 font-semibold hover:text-blue-800 transition-colors"
-                  >
-                    {expandedBlog === blog._id ? "Show Less" : "Read More"}
-                  </button>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {blogs.map((blog) => (
+            <div
+              key={blog._id}
+              onClick={() => handleBlogClick(blog._id)} // Redirect on click
+              className="group bg-white shadow-xl rounded-lg overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer"
+            >
+              <img
+                src={blog.image}
+                alt={blog.title}
+                className="w-full h-64 object-cover rounded-t-lg group-hover:opacity-90"
+              />
+              <div className="p-6">
+                <h2 className="text-2xl font-semibold text-gray-800 group-hover:text-purple-600 transition-colors duration-300 mb-3">
+                  {blog.title}
+                </h2>
+                <p className="text-md text-gray-600 italic mb-3">
+                  By {blog.author}
                 </p>
-                <p className="text-gray-400 mt-2">
-                  <span className="font-medium">Tags: </span>
-                  {blog.tags.join(", ")}
-                </p>
-              </div>
-              <div className="flex justify-between items-center mt-6">
-                <small className="text-gray-400 text-sm">
-                  Posted on: {new Date(blog.createdAt).toLocaleString()}
-                </small>
-                <p className="text-sm text-gray-500 flex items-center">
-                  <span role="img" aria-label="thumbs up" className="mr-1">
-                    👍
-                  </span>
-                  {blog.likes} Likes
+                <p className="text-gray-700 leading-relaxed mb-4">
+                  {blog.content.substring(0, 150)}...
                 </p>
               </div>
             </div>
-          </div>
-        ))
+          ))}
+        </div>
       )}
     </div>
   );
