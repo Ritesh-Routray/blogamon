@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 export default async function BlogPage({ params }) {
   const { id } = params;
 
@@ -68,12 +70,11 @@ export default async function BlogPage({ params }) {
           <div className="text-center">
             <p className="text-sm text-gray-500">
               Read More Articles{" "}
-              <a
-                href="/blogs"
-                className="text-indigo-600 hover:text-indigo-700 font-medium transition-colors duration-300"
-              >
-                here
-              </a>
+              <Link href="/blogs">
+                <span className="text-indigo-600 hover:text-indigo-700 font-medium transition-colors duration-300">
+                  here
+                </span>
+              </Link>
             </p>
             <p className="text-sm text-gray-500 mt-4">
               Posted on:{" "}
