@@ -2,11 +2,28 @@ import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/app/lib/mongoose.js";
 import Blog from "@/app/models/Blog";
 
-// GET: Fetch all blogs sorted by creation date
-export async function GET() {
+// GET: Fetch all blogs or search blogs by tags/title
+export async function GET(request) {
   try {
     await connectToDatabase();
-    const blogs = await Blog.find({}).sort({ createdAt: -1 }).select("-__v");
+    const { searchParams } = new URL(request.url);
+    const query = searchParams.get("query"); // Get the search query from URL
+
+    let blogs;
+
+    if (query) {
+      // Search blogs by title or tags (case-insensitive)
+      const regex = new RegExp(query, "i");
+      blogs = await Blog.find({
+        $or: [{ title: regex }, { tags: { $regex: regex } }],
+      })
+        .sort({ createdAt: -1 })
+        .select("-__v");
+    } else {
+      // Fetch all blogs if no search query is provided
+      blogs = await Blog.find({}).sort({ createdAt: -1 }).select("-__v");
+    }
+
     return NextResponse.json(blogs);
   } catch (error) {
     return NextResponse.json(

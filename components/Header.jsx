@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -7,44 +7,47 @@ import { FaSignInAlt, FaEdit, FaRegUser } from "react-icons/fa";
 const Header = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
   const router = useRouter();
 
-  // Check if the user is logged in (based on token presence)
   useEffect(() => {
     const token = localStorage.getItem("token");
     setIsLoggedIn(!!token);
   }, []);
 
-  // Handle logout
   const handleLogout = () => {
     localStorage.removeItem("token");
     setIsLoggedIn(false);
-    router.push("/"); // Redirect to home page after logout
+    router.push("/"); // Redirect to home page
   };
 
-  // Handle search
-  const handleSearch = (e) => {
+  const handleSearch = async (e) => {
     e.preventDefault();
     if (searchQuery) {
-      router.push(`/search?query=${searchQuery}`);
+      try {
+        const response = await fetch(`/api/blogs?query=${searchQuery}`);
+        if (response.ok) {
+          const data = await response.json();
+          setSearchResults(data);
+        } else {
+          console.error("Failed to fetch blogs.");
+        }
+      } catch (error) {
+        console.error("Error searching blogs:", error);
+      }
     }
   };
 
   return (
     <div className="bg-gradient-to-br from-purple-700 via-indigo-800 to-blue-900 min-h-screen font-[Poppins]">
-      {/* Header Section */}
       <header className="bg-transparent shadow-lg">
         <div className="container mx-auto flex flex-wrap justify-between items-center py-6 px-6 sm:px-12">
-          {/* Logo */}
           <h1 className="text-4xl sm:text-5xl font-extrabold text-white tracking-wider hover:text-yellow-400 transition duration-300 ease-in-out">
             <Link href="/" className="hover:text-yellow-400">
               Blogamon
             </Link>
           </h1>
-
-          {/* Navigation Buttons */}
           <nav className="flex items-center space-x-4">
-            {/* If logged in, show the menu */}
             {isLoggedIn ? (
               <>
                 <Link
@@ -78,21 +81,10 @@ const Header = () => {
         </div>
       </header>
 
-      {/* Main Content Section */}
       <main className="container mx-auto py-16 px-6 sm:px-8 text-center">
-        {/* Latest Blogs Heading */}
         <h2 className="text-5xl sm:text-6xl font-extrabold text-white mb-6 tracking-wide drop-shadow-lg">
           Discover the Latest Blogs
         </h2>
-
-        {/* Description Text */}
-        <p className="text-white text-lg sm:text-xl max-w-3xl mx-auto mb-12 leading-relaxed opacity-90">
-          Stay ahead of the curve with insights, trends, and stories from expert
-          bloggers. Get inspired, stay informed, and discover new perspectives
-          on topics that matter.
-        </p>
-
-        {/* Search Bar Section */}
         <form
           onSubmit={handleSearch}
           className="flex flex-col sm:flex-row items-center border border-white rounded-full bg-white py-2 px-4 max-w-md mx-auto shadow-lg"
@@ -111,6 +103,35 @@ const Header = () => {
             Search
           </button>
         </form>
+        {searchResults.length > 0 && (
+          <div className="mt-8">
+            <h3 className="text-2xl font-bold text-white mb-4">
+              Search Results:
+            </h3>
+            <ul className="space-y-4">
+              {searchResults.map((blog) => (
+                <li
+                  key={blog._id}
+                  className="bg-white p-4 rounded-lg shadow-md"
+                >
+                  <h4 className="text-lg font-semibold">{blog.title}</h4>
+                  <p className="text-gray-700">
+                    {blog.content.substring(0, 100)}...
+                  </p>
+                  <Link
+                    href={`/blogs/${blog._id}`}
+                    className="text-blue-500 mt-2 block"
+                  >
+                    Read More
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {searchQuery && searchResults.length === 0 && (
+          <p className="text-white mt-8">No blogs found for the given query.</p>
+        )}
       </main>
     </div>
   );
