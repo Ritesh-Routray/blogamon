@@ -85,6 +85,11 @@ const Header = () => {
         <h2 className="text-5xl sm:text-6xl font-extrabold text-white mb-6 tracking-wide drop-shadow-lg">
           Discover the Latest Blogs
         </h2>
+        {!isLoggedIn && (
+          <p className="text-white text-lg mb-6">
+            To create a blog, please sign up and log in.
+          </p>
+        )}
         <form
           onSubmit={handleSearch}
           className="flex flex-col sm:flex-row items-center border border-white rounded-full bg-white py-2 px-4 max-w-md mx-auto shadow-lg"
